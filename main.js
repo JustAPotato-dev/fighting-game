@@ -26,6 +26,7 @@ class Sprite {
         this.color = color;
         this.Jumpping;
         this.isAttacking;
+        this.health = 100;
     }
 
     draw() {
@@ -34,7 +35,7 @@ class Sprite {
 
         //attack box
         if (this.isAttacking) {
-            c.fillStyle = "green";
+            c.fillStyle = "rgba(0,0,0,0)";
             c.fillRect(
                 this.attackBox.position.x,
                 this.attackBox.position.y,
@@ -171,6 +172,8 @@ function animate() {
         player.isAttacking
     ) {
         player.isAttacking = false;
+        enemy.health -= 20;
+        document.querySelector("#enemyHealth").style.width = `${enemy.health}%`;
     }
 
     if (
@@ -181,6 +184,8 @@ function animate() {
         enemy.isAttacking
     ) {
         enemy.isAttacking = false;
+        player.health -= 20;
+        document.querySelector("#playerHealth").style.width = `${player.health}%`;
     }
 }
 
