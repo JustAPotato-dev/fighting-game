@@ -7,83 +7,19 @@ canvas.height = 576;
 c.fillRect(0, 0, canvas.width, canvas.height);
 
 const gravity = 0.7;
-class Sprite {
-    constructor({ position, velocity, color = "red", offset }) {
-        this.position = position;
-        this.velocity = velocity;
-        this.width = 50;
-        this.height = 150;
-        this.lastKey;
-        this.attackBox = {
-            position: {
-                x: this.position.x,
-                y: this.position.y,
-            },
-            offset: offset,
-            width: 170,
-            height: 50,
-        };
-        this.color = color;
-        this.Jumpping;
-        this.isAttacking;
-        this.health = 100;
-    }
 
-    draw() {
-        c.fillStyle = this.color;
-        c.fillRect(this.position.x, this.position.y, this.width, this.height);
+const background = new Sprite({
+    position: {
+        x: 0,
+        y: 0,
+    },
+    imageSrc: "./img/background.png",
+});
 
-        //attack box
-        if (this.isAttacking) {
-            c.fillStyle = "rgba(0,0,0,0)";
-            c.fillRect(
-                this.attackBox.position.x,
-                this.attackBox.position.y,
-                this.attackBox.width,
-                this.attackBox.height
-            );
-        }
-    }
-
-    update() {
-        this.draw();
-        this.attackBox.position.x = this.position.x + this.attackBox.offset.x;
-        this.attackBox.position.y = this.position.y;
-
-        if (
-            !(
-                this.position.x + this.width + this.velocity.x >= 1024 ||
-                this.position.x + this.velocity.x <= 0
-            )
-        )
-            this.position.x += this.velocity.x;
-
-        this.position.y += this.velocity.y;
-
-        if (this.position.y + this.height + this.velocity.y >= canvas.height) {
-            this.velocity.y = 0;
-            this.Jumpping = false;
-        } else this.velocity.y += gravity;
-    }
-
-    Jump() {
-        if (this.Jumpping) return;
-        this.Jumpping = true;
-        this.velocity.y = -20;
-    }
-
-    attack() {
-        this.isAttacking = true;
-        setTimeout(() => {
-            this.isAttacking = false;
-        }, 100);
-    }
-}
-
-const player = new Sprite({
+const player = new Fighter({
     position: {
         x: 212,
-        y: 350,
+        y: 300,
     },
     velocity: {
         x: 0,
@@ -97,10 +33,10 @@ const player = new Sprite({
 
 player.draw();
 
-const enemy = new Sprite({
+const enemy = new Fighter({
     position: {
         x: 738,
-        y: 350,
+        y: 300,
     },
     velocity: {
         x: 0,
@@ -130,49 +66,13 @@ const keys = {
     },
 };
 
-function rectangularCollision({ rectangle1, rectangle2 }) {
-    return (
-        rectangle1.attackBox.position.x + rectangle1.attackBox.width >= rectangle2.position.x &&
-        rectangle1.attackBox.position.x <= rectangle2.position.x + rectangle2.width &&
-        rectangle1.attackBox.position.y + rectangle1.attackBox.height >= rectangle2.position.y &&
-        rectangle1.attackBox.position.y <= rectangle2.position.y + rectangle2.height
-    );
-}
-
-function determineWinner({ player, enemy, timeId }) {
-    clearTimeout(timeId);
-    document.querySelector("#displayText").style.display = "flex";
-
-    if (player.health === enemy.health) {
-        document.querySelector("#displayText").innerHTML = "Tie";
-    } else if (player.health > enemy.health) {
-        document.querySelector("#displayText").innerHTML = "Player 1 Wins";
-    } else if (player.health < enemy.health) {
-        document.querySelector("#displayText").innerHTML = "Player 2 Wins";
-    }
-}
-
-let timer = 60;
-let timeId;
-function decreaseTimer() {
-    if (timer > 0) {
-        timeId = setTimeout(decreaseTimer, 1000);
-        timer--;
-        document.querySelector("#timer").innerHTML = timer;
-    }
-
-    if (timer === 0) {
-        document.querySelector("#displayText").style.display = "flex";
-        determineWinner({ player, enemy, timeId });
-    }
-}
-
 decreaseTimer();
 
 function animate() {
     window.requestAnimationFrame(animate);
     c.fillStyle = "black";
     c.fillRect(0, 0, canvas.width, canvas.height);
+    background.update();
     player.update();
     enemy.update();
 
