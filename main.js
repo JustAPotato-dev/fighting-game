@@ -20,7 +20,7 @@ class Sprite {
                 y: this.position.y,
             },
             offset: offset,
-            width: 100,
+            width: 170,
             height: 50,
         };
         this.color = color;
@@ -82,8 +82,8 @@ class Sprite {
 
 const player = new Sprite({
     position: {
-        x: 0,
-        y: 0,
+        x: 212,
+        y: 350,
     },
     velocity: {
         x: 0,
@@ -99,8 +99,8 @@ player.draw();
 
 const enemy = new Sprite({
     position: {
-        x: 400,
-        y: 100,
+        x: 738,
+        y: 350,
     },
     velocity: {
         x: 0,
@@ -138,6 +138,36 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
         rectangle1.attackBox.position.y <= rectangle2.position.y + rectangle2.height
     );
 }
+
+function determineWinner({ player, enemy, timeId }) {
+    clearTimeout(timeId);
+    document.querySelector("#displayText").style.display = "flex";
+
+    if (player.health === enemy.health) {
+        document.querySelector("#displayText").innerHTML = "Tie";
+    } else if (player.health > enemy.health) {
+        document.querySelector("#displayText").innerHTML = "Player 1 Wins";
+    } else if (player.health < enemy.health) {
+        document.querySelector("#displayText").innerHTML = "Player 2 Wins";
+    }
+}
+
+let timer = 60;
+let timeId;
+function decreaseTimer() {
+    if (timer > 0) {
+        timeId = setTimeout(decreaseTimer, 1000);
+        timer--;
+        document.querySelector("#timer").innerHTML = timer;
+    }
+
+    if (timer === 0) {
+        document.querySelector("#displayText").style.display = "flex";
+        determineWinner({ player, enemy, timeId });
+    }
+}
+
+decreaseTimer();
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -187,6 +217,11 @@ function animate() {
         player.health -= 20;
         document.querySelector("#playerHealth").style.width = `${player.health}%`;
     }
+
+    // End game based on health
+    if (enemy.health <= 0 || player.health <= 0) {
+        determineWinner({ player, enemy, timeId });
+    }
 }
 
 animate();
@@ -194,14 +229,17 @@ animate();
 window.addEventListener("keydown", (event) => {
     switch (event.key) {
         case "d":
+        case "D":
             keys.d.pressed = true;
             player.lastKey = "d";
             break;
         case "a":
+        case "A":
             keys.a.pressed = true;
             player.lastKey = "a";
             break;
         case "w":
+        case "W":
             player.Jump();
             break;
         case " ":
@@ -228,9 +266,11 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
     switch (event.key) {
         case "d":
+        case "D":
             keys.d.pressed = false;
             break;
         case "a":
+        case "A":
             keys.a.pressed = false;
             break;
     }
