@@ -11,6 +11,7 @@ class Sprite {
     constructor({ position, velocity }) {
         this.position = position;
         this.velocity = velocity;
+        this.width = 50;
         this.height = 150;
         this.lastKey;
     }
@@ -22,12 +23,27 @@ class Sprite {
 
     update() {
         this.draw();
-        this.position.x += this.velocity.x;
+
+        if (
+            !(
+                this.position.x + this.width + this.velocity.x >= 1024 ||
+                this.position.x + this.velocity.x <= 0
+            )
+        )
+            this.position.x += this.velocity.x;
+
         this.position.y += this.velocity.y;
 
         if (this.position.y + this.height + this.velocity.y >= canvas.height) {
             this.velocity.y = 0;
+            this.Jumpping = false;
         } else this.velocity.y += gravity;
+    }
+
+    Jump() {
+        if (this.Jumpping) return;
+        this.Jumpping = true;
+        this.velocity.y = -20;
     }
 }
 
@@ -110,7 +126,7 @@ window.addEventListener("keydown", (event) => {
             player.lastKey = "a";
             break;
         case "w":
-            player.velocity.y = -20;
+            player.Jump();
             break;
 
         case "ArrowRight":
@@ -122,7 +138,7 @@ window.addEventListener("keydown", (event) => {
             enemy.lastKey = "ArrowLeft";
             break;
         case "ArrowUp":
-            enemy.velocity.y = -20;
+            enemy.Jump();
             break;
     }
 });
