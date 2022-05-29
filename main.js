@@ -35,10 +35,6 @@ const player = new Fighter({
         x: 0,
         y: 0,
     },
-    offset: {
-        x: 0,
-        y: 0,
-    },
     imageSrc: "./img/samuraiMack/Idle.png",
     framesMax: 8,
     scale: 2.5,
@@ -55,6 +51,18 @@ const player = new Fighter({
         jump: { imageSrc: "./img/samuraiMack/Jump.png", framesMax: 2 },
         fall: { imageSrc: "./img/samuraiMack/Fall.png", framesMax: 2 },
         attack1: { imageSrc: "./img/samuraiMack/Attack1.png", framesMax: 6 },
+        takeHit: {
+            imageSrc: "./img/samuraiMack/Take Hit - white silhouette.png",
+            framesMax: 4,
+        },
+    },
+    attackBox: {
+        offset: {
+            x: 100,
+            y: 50,
+        },
+        width: 160,
+        height: 50,
     },
 });
 
@@ -67,11 +75,6 @@ const enemy = new Fighter({
     },
     velocity: {
         x: 0,
-        y: 0,
-    },
-    color: "blue",
-    offset: {
-        x: -50,
         y: 0,
     },
     imageSrc: "./img/kenji/Idle.png",
@@ -90,6 +93,18 @@ const enemy = new Fighter({
         jump: { imageSrc: "./img/kenji/Jump.png", framesMax: 2 },
         fall: { imageSrc: "./img/kenji/Fall.png", framesMax: 2 },
         attack1: { imageSrc: "./img/kenji/Attack1.png", framesMax: 4 },
+        takeHit: {
+            imageSrc: "./img/kenji/Take hit.png",
+            framesMax: 3,
+        },
+    },
+    attackBox: {
+        offset: {
+            x: -170,
+            y: 50,
+        },
+        width: 170,
+        height: 50,
     },
 });
 
@@ -127,48 +142,56 @@ function animate() {
     // player movement
     if (keys.a.pressed && player.lastKey === "a") {
         player.velocity.x = -5;
-        player.switchSprites("run");
+        player.switchSprite("run");
     } else if (keys.d.pressed && player.lastKey === "d") {
         player.velocity.x = 5;
-        player.switchSprites("run");
+        player.switchSprite("run");
     } else {
-        player.switchSprites("idle");
+        player.switchSprite("idle");
     }
 
+    // jumping
     if (player.velocity.y < 0) {
-        player.switchSprites("jump");
+        player.switchSprite("jump");
     } else if (player.velocity.y > 0) {
-        player.switchSprites("fall");
+        player.switchSprite("fall");
     }
 
+    // Enemy movement
     if (keys.ArrowLeft.pressed && enemy.lastKey === "ArrowLeft") {
-        // Enemy movement
         enemy.velocity.x = -5;
-        enemy.switchSprites("run");
+        enemy.switchSprite("run");
     } else if (keys.ArrowRight.pressed && enemy.lastKey === "ArrowRight") {
         enemy.velocity.x = 5;
-        enemy.switchSprites("run");
+        enemy.switchSprite("run");
     } else {
-        enemy.switchSprites("idle");
+        enemy.switchSprite("idle");
     }
 
+    // jumping
     if (enemy.velocity.y < 0) {
-        enemy.switchSprites("jump");
+        enemy.switchSprite("jump");
     } else if (enemy.velocity.y > 0) {
-        enemy.switchSprites("fall");
+        enemy.switchSprite("fall");
     }
 
-    // detect for collision
+    // detect for collision & enemy gets hit
     if (
         rectangularCollision({
             rectangle1: player,
             rectangle2: enemy,
         }) &&
-        player.isAttacking
+        player.isAttacking &&
+        player.framesCurrent === 4
     ) {
+        enemy.takeHit();
         player.isAttacking = false;
-        enemy.health -= 20;
         document.querySelector("#enemyHealth").style.width = `${enemy.health}%`;
+    }
+
+    // if player misses
+    if (player.isAttacking && player.framesCurrent === 4) {
+        player.isAttacking = false;
     }
 
     if (
@@ -176,11 +199,16 @@ function animate() {
             rectangle1: enemy,
             rectangle2: player,
         }) &&
-        enemy.isAttacking
+        enemy.isAttacking &&
+        enemy.framesCurrent === 2
     ) {
+        player.takeHit();
         enemy.isAttacking = false;
-        player.health -= 20;
         document.querySelector("#playerHealth").style.width = `${player.health}%`;
+    }
+
+    if (enemy.isAttacking && enemy.framesCurrent === 2) {
+        enemy.isAttacking = false;
     }
 
     // End game based on health
